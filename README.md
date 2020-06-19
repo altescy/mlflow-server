@@ -4,6 +4,7 @@ mlflow-server
 - `.env`
 
 ```
+APP_PORT=8080
 MYSQL_ROOT_PASSWORD=password
 S3_BUCKET=your-s3-bucket
 AWS_ACCESS_KEY_ID=YOURACCESKEYID
