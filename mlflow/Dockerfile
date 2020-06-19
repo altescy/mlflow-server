@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.8
 
 RUN mkdir -p /mlflow/mlruns
 
@@ -15,7 +15,12 @@ RUN apt-get update && apt-get install -y \
 RUN apt clean &&  rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
 
 RUN pip install -U pip && \
-    pip install mysqlclient mlflow
+    pip install poetry
+
+COPY ./pyproject.toml ./pyproject.toml
+COPY ./poetry.lock ./poetry.lock
+
+RUN poetry install
 
 COPY ./run.sh ./run.sh
 RUN chmod +x ./run.sh
