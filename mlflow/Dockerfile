@@ -21,3 +21,7 @@ COPY ./pyproject.toml ./pyproject.toml
 COPY ./poetry.lock ./poetry.lock
 
 RUN poetry install
+
+COPY ./run.sh ./run.sh
+
+CMD ["bash", "./run.sh"]
