@@ -6,9 +6,9 @@ authors = ["altescy <altescy@fastmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-mlflow = "^1.9.0"
-mysqlclient = "^1.4.6"
 boto3 = "^1.14.6"
+mlflow = "^1.13.1"
+mysqlclient = "^2.0.3"
 
 [tool.poetry.dev-dependencies]
 
