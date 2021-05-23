@@ -1,34 +1,60 @@
 version: '3'
+
 services:
-    waitfordb:
-        image: dadarek/wait-for-dependencies
-        depends_on:
-            - mysql
-        command: mysql:3306
+  waitfordb:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      - mysql
+    command: mysql:3306
 
-    mlflow:
-        build: ./mlflow
-        depends_on:
-            - mysql
-            - waitfordb
-        ports:
-            - "${APP_PORT}:5000"
-        env_file: .env
-        volumes:
-            - virtualenvs:/root/.cache/pypoetry/virtualenvs
-        restart: always
+  waitforminio:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      - minio
+    command: minio:${MINIO_PORT}
 
-    mysql:
-        image: mysql:8.0
-        environment:
-            TZ: "Asia/Tokyo"
-            MYSQL_DATABASE: "mlflow"
-            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-        volumes:
-            - mysql:/var/lib/mysql
-            - ./mysql/conf.d:/etc/mysql/conf.d
-        restart: always
+  mlflow:
+    build: ./mlflow
+    depends_on:
+      - mysql
+      - minio
+      - waitfordb
+      - waitforminio
+    ports:
+      - "${MLFLOW_PORT}:5000"
+    env_file: .env
+    volumes:
+      - virtualenvs:/root/.cache/pypoetry/virtualenvs
+    restart: always
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      TZ: "Asia/Tokyo"
+      MYSQL_DATABASE: "mlflow"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql:/var/lib/mysql
+      - ./mysql/conf.d:/etc/mysql/conf.d
+    restart: always
+
+  minio:
+    image: minio/minio
+    environment:
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY}"
+    command:
+      - "server"
+      - "--address"
+      - "${MINIO_HOST}:80"
+      - "/data"
+    ports:
+      - "${MINIO_PORT}:80"
+    volumes:
+      - minio:/data
+    restart: always
 
 volumes:
     mysql:
+    minio:
     virtualenvs:
