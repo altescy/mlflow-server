@@ -1,27 +1,39 @@
-FROM python:3.10
-
-RUN mkdir -p /mlflow/mlruns
+FROM python:3.11-slim as builder
 
 WORKDIR /mlflow
 
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
-
-RUN echo "export LC_ALL=$LC_ALL" >> /etc/profile.d/locale.sh
-RUN echo "export LANG=$LANG" >> /etc/profile.d/locale.sh
-
 RUN apt-get update && apt-get install -y \
-    default-libmysqlclient-dev
+    default-libmysqlclient-dev \
+    build-essential \
+    pkg-config
 RUN apt clean &&  rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
-
 RUN pip install -U pip && \
     pip install poetry
 
-COPY ./pyproject.toml ./pyproject.toml
-COPY ./poetry.lock ./poetry.lock
+ENV POETRY_NO_INTERACTION=1 \
+  POETRY_VIRTUALENVS_IN_PROJECT=1 \
+  POETRY_VIRTUALENVS_CREATE=1 \
+  POETRY_CACHE_DIR=/tmp/poetry_cache
 
-RUN poetry install
+COPY ./pyproject.toml ./poetry.lock ./
+RUN poetry install --no-root --without dev && rm -rf /tmp/poetry_cache
 
-COPY ./run.sh ./run.sh
 
-CMD ["bash", "./run.sh"]
+FROM python:3.11-slim
+
+WORKDIR /mlflow
+
+RUN apt-get update && apt-get install -y \
+    default-libmysqlclient-dev
+
+ENV PYTHONPATH=/app \
+  PATH="/mlflow/.venv/bin:$PATH" \
+  LC_ALL=C.UTF-8 \
+  LANG=C.UTF-8
+RUN echo "export LC_ALL=$LC_ALL" >> /etc/profile.d/locale.sh
+RUN echo "export LANG=$LANG" >> /etc/profile.d/locale.sh
+
+COPY --from=builder /mlflow/.venv /mlflow/.venv
+RUN mkdir -p ./mlruns
+
+COPY ./run_server.sh ./run_deployment.sh ./deployment.yaml ./

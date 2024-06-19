@@ -5,9 +5,9 @@ description = ""
 authors = ["altescy <altescy@fastmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.11"
+python = ">=3.11,<3.12"
 boto3 = "^1.26.41"
-mlflow = "^2.6.0"
+mlflow = {version = "^2.6.0", extras = ["genai"]}
 mysqlclient = "^2.1.1"
 
 [tool.poetry.dev-dependencies]

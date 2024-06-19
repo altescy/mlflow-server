@@ -1,0 +1,56 @@
+endpoints:
+- name: gpt-4-turbo-completions
+  endpoint_type: llm/v1/completions
+  model:
+      provider: openai
+      name: gpt-4-turbo
+      config:
+          openai_api_key: $OPENAI_API_KEY
+
+- name: gpt-4-turbo-chat
+  endpoint_type: llm/v1/chat
+  model:
+      provider: openai
+      name: gpt-4-turbo
+      config:
+          openai_api_key: $OPENAI_API_KEY
+
+- name: gpt-4o-completions
+  endpoint_type: llm/v1/completions
+  model:
+      provider: openai
+      name: gpt-4o
+      config:
+          openai_api_key: $OPENAI_API_KEY
+
+- name: gpt-4o-chat
+  endpoint_type: llm/v1/chat
+  model:
+      provider: openai
+      name: gpt-4o
+      config:
+          openai_api_key: $OPENAI_API_KEY
+
+- name: text-embedding-ada-002
+  endpoint_type: llm/v1/embeddings
+  model:
+      provider: openai
+      name: text-embedding-ada-002
+      config:
+          openai_api_key: $OPENAI_API_KEY
+
+- name: text-embedding-3-small
+  endpoint_type: llm/v1/embeddings
+  model:
+      provider: openai
+      name: text-embedding-3-small
+      config:
+          openai_api_key: $OPENAI_API_KEY
+
+- name: text-embedding-3-large
+  endpoint_type: llm/v1/embeddings
+  model:
+      provider: openai
+      name: text-embedding-3-large
+      config:
+          openai_api_key: $OPENAI_API_KEY
