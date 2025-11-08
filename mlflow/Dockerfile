@@ -1,4 +1,4 @@
-FROM python:3.14-slim as builder
+FROM python:3.12-slim as builder
 
 WORKDIR /mlflow
 
@@ -19,7 +19,7 @@ COPY ./pyproject.toml ./poetry.lock ./
 RUN poetry install --no-root --without dev && rm -rf /tmp/poetry_cache
 
 
-FROM python:3.14-slim
+FROM python:3.12-slim
 
 WORKDIR /mlflow
 
