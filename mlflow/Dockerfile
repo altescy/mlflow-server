@@ -1,4 +1,4 @@
-FROM python:3.11-slim as builder
+FROM python:3.14-slim as builder
 
 WORKDIR /mlflow
 
@@ -11,15 +11,15 @@ RUN pip install -U pip && \
     pip install poetry
 
 ENV POETRY_NO_INTERACTION=1 \
-  POETRY_VIRTUALENVS_IN_PROJECT=1 \
-  POETRY_VIRTUALENVS_CREATE=1 \
-  POETRY_CACHE_DIR=/tmp/poetry_cache
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
 
 COPY ./pyproject.toml ./poetry.lock ./
 RUN poetry install --no-root --without dev && rm -rf /tmp/poetry_cache
 
 
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 WORKDIR /mlflow
 
@@ -27,9 +27,9 @@ RUN apt-get update && apt-get install -y \
     default-libmysqlclient-dev
 
 ENV PYTHONPATH=/app \
-  PATH="/mlflow/.venv/bin:$PATH" \
-  LC_ALL=C.UTF-8 \
-  LANG=C.UTF-8
+    PATH="/mlflow/.venv/bin:$PATH" \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8
 RUN echo "export LC_ALL=$LC_ALL" >> /etc/profile.d/locale.sh
 RUN echo "export LANG=$LANG" >> /etc/profile.d/locale.sh
 

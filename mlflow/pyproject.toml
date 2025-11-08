@@ -2,12 +2,12 @@
 name = "mlflow_server"
 version = "0.1.0"
 description = ""
-authors = ["altescy <altescy@fastmail.com>"]
+authors = ["altescy <me@altescy.jp>"]
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.12"
+python = ">=3.14"
 boto3 = "^1.26.41"
-mlflow = {version = "^2.6.0", extras = ["genai"]}
+mlflow = {version = "^3.6.0"}
 mysqlclient = "^2.1.1"
 
 [tool.poetry.dev-dependencies]
