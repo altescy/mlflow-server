@@ -1,39 +1,40 @@
-FROM python:3.12-slim as builder
+# syntax=docker/dockerfile:1.11
+FROM python:3.12-slim AS builder
+
+# Install uv from the official image (pinning the minor version is recommended)
+COPY --from=ghcr.io/astral-sh/uv:0.12 /uv /uvx /bin/
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_NO_DEV=1
 
 WORKDIR /mlflow
 
-RUN apt-get update && apt-get install -y \
-    default-libmysqlclient-dev \
-    build-essential \
-    pkg-config
-RUN apt clean &&  rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
-RUN pip install -U pip && \
-    pip install poetry
+# Install dependencies in a separate layer so that source-code changes do not
+# invalidate the dependency cache.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project --no-editable
 
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
-
-COPY ./pyproject.toml ./poetry.lock ./
-RUN poetry install --no-root --without dev && rm -rf /tmp/poetry_cache
+# Copy the rest of the project files and verify the lockfile.
+COPY . /mlflow
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-install-project --no-editable
 
 
 FROM python:3.12-slim
 
 WORKDIR /mlflow
 
-RUN apt-get update && apt-get install -y \
-    default-libmysqlclient-dev
-
 ENV PYTHONPATH=/app \
     PATH="/mlflow/.venv/bin:$PATH" \
     LC_ALL=C.UTF-8 \
     LANG=C.UTF-8
-RUN echo "export LC_ALL=$LC_ALL" >> /etc/profile.d/locale.sh
-RUN echo "export LANG=$LANG" >> /etc/profile.d/locale.sh
+RUN echo "export LC_ALL=$LC_ALL" >> /etc/profile.d/locale.sh && \
+    echo "export LANG=$LANG" >> /etc/profile.d/locale.sh
 
 COPY --from=builder /mlflow/.venv /mlflow/.venv
 RUN mkdir -p ./mlruns
 
-COPY ./run_server.sh ./run_deployment.sh ./deployment.yaml ./
+COPY ./run_server.sh ./

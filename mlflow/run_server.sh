@@ -1,6 +1,6 @@
-DBURI=mysql://root:${MYSQL_ROOT_PASSWORD}@mysql:3306/mlflow
+DBURI=mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@mysql:3306/mlflow
 
-test $MLFLOW_MIGRATION && poetry run mlflow db upgrade $DBURI
+test $MLFLOW_MIGRATION && mlflow db upgrade $DBURI
 
 mlflow server \
     --backend-store-uri  $DBURI \
