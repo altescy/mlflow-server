@@ -11,9 +11,7 @@ services:
     build: ./mlflow
     depends_on:
       - mysql
-      - minio
       - waitfordb
-      - waitforminio
     command: ["bash", "./run_server.sh"]
     ports:
       - "${MLFLOW_SERVER_PORT}:5000"
