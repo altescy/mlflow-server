@@ -1,0 +1,48 @@
+name: mlflow-server
+
+services:
+  mlflow-server:
+    image: ghcr.io/mlflow/mlflow:v3.15.0-full
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - |
+        DBURI="mysql+pymysql://root:$${MYSQL_ROOT_PASSWORD}@mysql:3306/mlflow"
+        if [ -n "$${MLFLOW_MIGRATION}" ]; then mlflow db upgrade "$${DBURI}"; fi
+        exec mlflow server \
+          --backend-store-uri "$${DBURI}" \
+          --default-artifact-root "s3://$${S3_BUCKET}" \
+          --host 0.0.0.0 \
+          --port 5000 \
+          --workers 1
+    ports:
+      - "${MLFLOW_SERVER_PORT}:5000"
+    env_file: .env
+    environment:
+      MLFLOW_SERVER_ENABLE_JOB_EXECUTION: "false"
+    mem_limit: 1g
+    memswap_limit: 1g
+    restart: always
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      TZ: "Asia/Tokyo"
+      MYSQL_DATABASE: "mlflow"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql:/var/lib/mysql
+      - ./mysql/conf.d:/etc/mysql/conf.d
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: always
+
+volumes:
+  mysql:
